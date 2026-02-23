@@ -1,4 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
@@ -6,6 +7,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
+
+function getCsrf(): string {
+    const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function postJson(url: string, body: object): Promise<Record<string, unknown>> {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': getCsrf(), 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        body: JSON.stringify(body),
+    });
+    return res.json().catch(() => ({}));
+}
 
 const breadcrumbs = (page: { id: number; title: string }): BreadcrumbItem[] => [
     { title: 'Dashboard', href: dashboard().url },
@@ -30,6 +46,8 @@ type PageData = {
 type Props = { page: PageData; languages: Language[] };
 
 export default function AdminPagesEdit({ page, languages }: Props) {
+    const [headings, setHeadings] = useState<string[]>([]);
+    const [headingsLoading, setHeadingsLoading] = useState(false);
     const form = useForm({
         title: page.title,
         slug: page.slug,
@@ -99,6 +117,84 @@ export default function AdminPagesEdit({ page, languages }: Props) {
                             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
                         />
                         <InputError message={form.errors.body} />
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={headingsLoading}
+                                onClick={async () => {
+                                    setHeadingsLoading(true);
+                                    setHeadings([]);
+                                    const data = await postJson('/admin/ai/content/headings', {
+                                        title_or_keyword: form.data.title || form.data.body.slice(0, 200),
+                                        count: 6,
+                                    });
+                                    setHeadings((data.headings as string[]) ?? []);
+                                    setHeadingsLoading(false);
+                                }}
+                            >
+                                {headingsLoading ? '...' : 'H2 oner'}
+                            </Button>
+                        </div>
+                        {headings.length > 0 && (
+                            <ul className="mt-2 list-inside list-decimal text-sm text-muted-foreground">
+                                {headings.map((h, i) => (
+                                    <li key={i}>{h}</li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                    <div>
+                        <Label htmlFor="meta_title">Meta baslik</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="meta_title"
+                                value={form.data.meta_title}
+                                onChange={(e) => form.setData('meta_title', e.target.value)}
+                                className="mt-1 flex-1"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mt-1 shrink-0"
+                                onClick={async () => {
+                                    const data = await postJson('/admin/ai/content/meta-title', {
+                                        content: form.data.body || form.data.title,
+                                    });
+                                    if (data.meta_title) form.setData('meta_title', String(data.meta_title));
+                                }}
+                            >
+                                Meta uret
+                            </Button>
+                        </div>
+                    </div>
+                    <div>
+                        <Label htmlFor="meta_description">Meta aciklama</Label>
+                        <div className="flex gap-2">
+                            <textarea
+                                id="meta_description"
+                                value={form.data.meta_description}
+                                onChange={(e) => form.setData('meta_description', e.target.value)}
+                                rows={2}
+                                className="mt-1 flex-1 rounded-md border border-input bg-background px-3 py-2"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mt-1 shrink-0"
+                                onClick={async () => {
+                                    const data = await postJson('/admin/ai/content/meta-description', {
+                                        content: form.data.body || form.data.title,
+                                    });
+                                    if (data.meta_description) form.setData('meta_description', String(data.meta_description));
+                                }}
+                            >
+                                Meta uret
+                            </Button>
+                        </div>
                     </div>
                     <div>
                         <Label htmlFor="status">Durum</Label>

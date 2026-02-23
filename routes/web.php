@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\AiBrandController;
+use App\Http\Controllers\Admin\AiContentController;
+use App\Http\Controllers\Admin\AiIdeasController;
+use App\Http\Controllers\Admin\AiTranslateController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\PromptTemplateController;
 use App\Http\Controllers\Admin\RedirectController;
-use App\Http\Controllers\Admin\AiTranslateController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController as PublicPageController;
@@ -46,6 +50,19 @@ Route::middleware(['auth', 'verified', 'can:accessAdmin'])->group(function () {
     Route::resource('admin/menus', MenuController::class)->except(['show'])->names('admin.menus')->parameters(['menu' => 'menu']);
     Route::get('admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
     Route::put('admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
+    Route::get('admin/ai/brand', [AiBrandController::class, 'index'])->name('admin.ai.brand.index');
+    Route::put('admin/ai/brand', [AiBrandController::class, 'update'])->name('admin.ai.brand.update');
+    Route::get('admin/ai/ideas', [AiIdeasController::class, 'index'])->name('admin.ai.ideas.index');
+    Route::post('admin/ai/ideas/suggest', [AiIdeasController::class, 'suggest'])->name('admin.ai.ideas.suggest');
+    Route::get('admin/ai/content', [AiContentController::class, 'index'])->name('admin.ai.content.index');
+    Route::post('admin/ai/content/paragraph', [AiContentController::class, 'paragraph'])->name('admin.ai.content.paragraph');
+    Route::post('admin/ai/content/blog-draft', [AiContentController::class, 'blogDraft'])->name('admin.ai.content.blog-draft');
+    Route::post('admin/ai/content/rewrite', [AiContentController::class, 'rewrite'])->name('admin.ai.content.rewrite');
+    Route::post('admin/ai/content/meta-title', [AiContentController::class, 'metaTitle'])->name('admin.ai.content.meta-title');
+    Route::post('admin/ai/content/meta-description', [AiContentController::class, 'metaDescription'])->name('admin.ai.content.meta-description');
+    Route::post('admin/ai/content/excerpt', [AiContentController::class, 'excerpt'])->name('admin.ai.content.excerpt');
+    Route::post('admin/ai/content/headings', [AiContentController::class, 'headings'])->name('admin.ai.content.headings');
+    Route::resource('admin/ai/templates', PromptTemplateController::class)->except(['show'])->names('admin.ai.templates')->parameters(['template' => 'prompt_template']);
     Route::get('admin/ai-translate', [AiTranslateController::class, 'index'])->name('admin.ai-translate.index');
     Route::post('admin/ai-translate', [AiTranslateController::class, 'store'])->name('admin.ai-translate.store');
     Route::resource('admin/redirects', RedirectController::class)->except(['show'])->names('admin.redirects')->parameters(['redirect' => 'redirect']);

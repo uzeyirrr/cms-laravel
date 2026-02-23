@@ -57,6 +57,26 @@ const mainNavItems: NavItem[] = [
         href: '/admin/ai-translate',
         icon: Bot,
     },
+    {
+        title: 'AI Marka Rehberi',
+        href: '/admin/ai/brand',
+        icon: Bot,
+    },
+    {
+        title: 'AI Fikir Uretici',
+        href: '/admin/ai/ideas',
+        icon: Bot,
+    },
+    {
+        title: 'AI Icerik Uretici',
+        href: '/admin/ai/content',
+        icon: Bot,
+    },
+    {
+        title: 'AI Prompt Sablonlari',
+        href: '/admin/ai/templates',
+        icon: Bot,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
